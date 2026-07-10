@@ -1,10 +1,16 @@
 package com.example.amphibianas.ui
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.amphibianas.AmphibianApplication
 import com.example.amphibianas.model.Amphibian
-import com.example.amphibianas.network.Repository
-import com.example.amphibianas.network.RetrofitInstance
+import com.example.amphibianas.network.AmphibianRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -15,8 +21,9 @@ sealed interface AmphibianUiState {
     data class Error(val message: String) : AmphibianUiState
 }
 
-class AmphibianViewModel : ViewModel() {
-    private val retrofit = RetrofitInstance.api
+class AmphibianViewModel (
+    private val repository : AmphibianRepository
+) : ViewModel() {
     private val _uiState =
         MutableStateFlow<AmphibianUiState>(AmphibianUiState.Loading)
     val uiState: StateFlow<AmphibianUiState> = _uiState
@@ -28,7 +35,8 @@ class AmphibianViewModel : ViewModel() {
     fun loadAmphibians() {
         viewModelScope.launch {
             try {
-                val amphibians = retrofit.getAmphibians()
+                delay(1500)
+                val amphibians = repository.getAmphibians()
                 _uiState.value =
                     AmphibianUiState.Success(amphibians)
             } catch (e: Exception) {
